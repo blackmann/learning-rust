@@ -1,40 +1,68 @@
-use serde::{Serialize, Deserialize};
+use clap::{ArgEnum, Parser, Subcommand};
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Task {
-    id: i32,
-    title: String,
-    completed: bool,
-    removed: bool,
+// use serde::{Serialize, Deserialize};
+
+const DESCRIPTION: &str = "Create todo list from the terminal. This is research project to learn Rust 🦀.";
+
+#[derive(Parser)]
+#[clap(author = "blackmann <mail@degreat.co.uk>", version = "1.0", about = DESCRIPTION, long_about = None)]
+struct Cli {
+    /// Actions to run
+    #[clap(subcommand)]
+    command: Commands,
 }
 
-struct State {
-    todos: Vec<Task>,
+#[derive(Subcommand)]
+enum Commands {
+    /// Add new task to the todo
+    Add { name: String },
+
+    /// Remove a task
+    Remove { id: i32 },
+
+    /// View all saved tasks.
+    View {
+        #[clap(arg_enum)]
+        status: TaskStatus
+    },
+
+    /// Update properties of a task
+    Update {
+        id: i32,
+        title: Option<String>,
+        #[clap(arg_enum)]
+        status: Option<TaskStatus>,
+    },
 }
 
-impl State {
-    fn new(source: &str) {}
+#[derive(Clone, ArgEnum)]
+enum TaskStatus { Completed, Pending, Removed }
 
-    fn add(title: &str) {}
 
-    fn remove() {}
-
-    fn render() {}
-
-    fn update() {}
-}
-
-fn print_usage() {
-    let command_width = 7;
-
-    println!("Usage: todo <action> <args>\n");
-    println!("[Actions]");
-    println!("  {:w$} - Add a new task. The argument should be the task description", "add", w = command_width);
-    println!("  {:w$} - Remove a task. Argument is task id. Get task id by running 'todo view'", "remove", w = command_width);
-    println!("  {:w$} - View all available tasks.", "view", w = command_width);
-    println!("  {:w$} - Update a todo item. Example 'todo update 12 -t \"new title\" -c true|false'", "update", w = command_width)
-}
+// #[derive(Serialize, Deserialize, Debug)]
+// struct Task {
+//     id: i32,
+//     title: String,
+//     completed: bool,
+//     removed: bool,
+// }
+//
+// struct State {
+//     todos: Vec<Task>,
+// }
+//
+// impl State {
+//     fn new(source: &str) {}
+//
+//     fn add(title: &str) {}
+//
+//     fn remove() {}
+//
+//     fn render() {}
+//
+//     fn update() {}
+// }
 
 fn main() {
-    print_usage();
+    let cli = Cli::parse();
 }
