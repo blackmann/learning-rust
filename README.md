@@ -8,6 +8,8 @@ just learning syntax and semantics.
 
 ## 🗓 Timeline
 
-| Date            | Activity                                                                      |
-|-----------------|-------------------------------------------------------------------------------|
-| 25 January 2022 | Started work on a todo list command-line app. Implemented printing the usage. |
+| Date            | Activity                                                                                           |
+|-----------------|----------------------------------------------------------------------------------------------------|
+| 25 January 2022 | Started work on a todo list command-line app. Implemented printing the usage.                      |
+| 26 January 2022 | Refactored to use `clap` for handling argument parsing. Clap comes along with some nice batteries  |
+| -               |                                                                                                    |

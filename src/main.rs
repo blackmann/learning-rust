@@ -1,4 +1,5 @@
 use clap::{ArgEnum, Parser, Subcommand};
+use serde::{Serialize, Deserialize};
 
 // use serde::{Serialize, Deserialize};
 
@@ -15,7 +16,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Add new task to the todo
-    Add { name: String },
+    Add { title: String },
 
     /// Remove a task
     Remove { id: i32 },
@@ -23,7 +24,7 @@ enum Commands {
     /// View all saved tasks.
     View {
         #[clap(arg_enum)]
-        status: TaskStatus
+        status: Option<TaskStatus>
     },
 
     /// Update properties of a task
@@ -35,34 +36,46 @@ enum Commands {
     },
 }
 
-#[derive(Clone, ArgEnum)]
-enum TaskStatus { Completed, Pending, Removed }
+#[derive(Clone, Serialize, Deserialize, ArgEnum, Debug)]
+enum TaskStatus { Completed, Pending, Removed, All }
 
 
-// #[derive(Serialize, Deserialize, Debug)]
-// struct Task {
-//     id: i32,
-//     title: String,
-//     completed: bool,
-//     removed: bool,
-// }
-//
-// struct State {
-//     todos: Vec<Task>,
-// }
-//
-// impl State {
-//     fn new(source: &str) {}
-//
-//     fn add(title: &str) {}
-//
-//     fn remove() {}
-//
-//     fn render() {}
-//
-//     fn update() {}
-// }
+#[derive(Serialize, Deserialize, Debug)]
+struct Task {
+    id: i32,
+    title: String,
+    status: TaskStatus,
+}
+
+struct State {
+    todos: Vec<Task>,
+}
+
+impl State {
+    fn new(source: &str) {}
+
+    fn add(&self, title: String) {}
+
+    fn remove(&self, id: i32) {}
+
+    fn render(&self, status: Option<TaskStatus>) {}
+
+    fn update(&self, id: i32, title: Option<String>, status: Option<TaskStatus>) {}
+}
 
 fn main() {
-    let cli = Cli::parse();
+    let cli: Cli = Cli::parse();
+
+    let state = State {
+        todos: Vec::new()
+    };
+
+    match cli.command {
+        Commands::Add { title } => state.add(title),
+        Commands::Remove { id } => state.remove(id),
+        Commands::View { status } => state.render(status),
+        Commands::Update { id, title, status } => {
+            state.update(id, title, status)
+        }
+    }
 }
