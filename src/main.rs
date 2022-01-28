@@ -1,3 +1,5 @@
+use std::fs::File;
+use std::io::{Error, Read, Write};
 use clap::{ArgEnum, Parser, Subcommand};
 use serde::{Serialize, Deserialize};
 
@@ -47,28 +49,71 @@ struct Task {
     status: TaskStatus,
 }
 
+#[derive(Debug)]
 struct State {
+    source: String,
     todos: Vec<Task>,
 }
 
 impl State {
-    fn new(source: &str) {}
+    fn new(source: &str) -> Result<State, Error> {
+        let mut file = File::options().read(true).create(true).write(true).open(source)?;
+        let mut content: String = String::new();
+        file.read_to_string(&mut content)?;
 
-    fn add(&self, title: String) {}
+        // it's a new day
+        if content.len() == 0 {
+            return Ok(State {
+                source: String::from(source),
+                todos: Vec::new(),
+            });
+        }
+
+        let todos: Vec<Task> = serde_json::from_str(&content).unwrap();
+
+        Ok(State {
+            source: String::from(source),
+            todos,
+        })
+    }
+
+    fn add(&mut self, title: String) {
+        self.todos.insert(self.todos.len(), Task {
+            id: match self.todos.last() {
+                Some(last) => last.id + 1,
+                None => 1
+            },
+            title,
+            status: TaskStatus::Pending
+        });
+
+        self.save();
+    }
 
     fn remove(&self, id: i32) {}
 
-    fn render(&self, status: Option<TaskStatus>) {}
+    fn render(&self, status: Option<TaskStatus>) {
+        for todo in &self.todos {
+            println!("[ ] {}", todo.title)
+        }
+    }
 
     fn update(&self, id: i32, title: Option<String>, status: Option<TaskStatus>) {}
+
+    fn save(&self) -> Result<(), Error> {
+        let serialized: String = serde_json::to_string(&self.todos).unwrap();
+
+        let mut file = File::options().write(true).create(true).open(&self.source)?;
+        file.write_all(serialized.as_bytes())?;
+
+        Ok(())
+    }
 }
 
-fn main() {
+fn main() -> Result<(), Error> {
     let cli: Cli = Cli::parse();
 
-    let state = State {
-        todos: Vec::new()
-    };
+    let mut state = State::new("todos.json")?;
 
     match cli.command {
         Commands::Add { title } => state.add(title),
@@ -78,4 +123,6 @@ fn main() {
             state.update(id, title, status)
         }
     }
+
+    Ok(())
 }

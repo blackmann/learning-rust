@@ -8,8 +8,8 @@ just learning syntax and semantics.
 
 ## 🗓 Timeline
 
-| Date            | Activity                                                                                           |
-|-----------------|----------------------------------------------------------------------------------------------------|
-| 25 January 2022 | Started work on a todo list command-line app. Implemented printing the usage.                      |
-| 26 January 2022 | Refactored to use `clap` for handling argument parsing. Clap comes along with some nice batteries  |
-| -               |                                                                                                    |
+| Date            | Activity                                                                                                                                                               |
+|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 25 January 2022 | Started work on a todo list command-line app. Implemented printing the usage.                                                                                          |
+| 26 January 2022 | Refactored to use `clap` for handling argument parsing. Clap comes along with some nice batteries                                                                      |
+| 28 January 2022 | I didn't skip a night. Just happened to finish up at this time. 12:33 AM. I'm getting a hang of rust. It's cool. I'm able to get through documentations for libraries. |
