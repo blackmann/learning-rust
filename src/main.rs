@@ -31,14 +31,18 @@ enum Commands {
 
     /// Update properties of a task
     Update {
+        /// The ID of the task. Use `view` to check IDs
         id: i32,
+        /// The new title
+        #[clap(short = 't')]
         title: Option<String>,
-        #[clap(arg_enum)]
+        /// The new status
+        #[clap(arg_enum, short = 's')]
         status: Option<TaskStatus>,
     },
 }
 
-#[derive(Clone, Serialize, Deserialize, ArgEnum, Debug)]
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq, Copy, ArgEnum, Debug)]
 enum TaskStatus { Completed, Pending, Removed, All }
 
 
@@ -84,27 +88,63 @@ impl State {
                 None => 1
             },
             title,
-            status: TaskStatus::Pending
+            status: TaskStatus::Pending,
         });
 
         self.save();
     }
 
-    fn remove(&self, id: i32) {}
+    fn remove(&mut self, id: i32) {
+        let todo = self.todos.iter_mut().find(|task| { task.id == id });
 
-    fn render(&self, status: Option<TaskStatus>) {
-        for todo in &self.todos {
-            println!("[ ] {}", todo.title)
+        match todo {
+            Some(found) => { found.status = TaskStatus::Removed }
+            None => ()
         }
+
+        self.save();
     }
 
-    fn update(&self, id: i32, title: Option<String>, status: Option<TaskStatus>) {}
+    fn update(&mut self, id: i32, title: Option<String>, status: Option<TaskStatus>) {
+        let todo = self.todos.iter_mut().find(|task| { task.id == id });
+
+        match todo {
+            Some(found) => {
+                found.title = title.unwrap_or((&found.title).to_string());
+                found.status = status.unwrap_or(found.status);
+            }
+
+            None => ()
+        }
+
+        self.save();
+    }
+
+    fn render(&self, status: Option<TaskStatus>) {
+        println!("[S]   ID TASK");
+        println!("-------------------------------------------------");
+        for todo in &self.todos {
+            if todo.status != TaskStatus::Removed {
+                println!("[{}] {:>4} {}",
+                         if todo.status == TaskStatus::Completed { "x" } else { " " },
+                         todo.id,
+                         todo.title)
+            }
+        }
+
+        println!(" ^ ");
+        println!(" | ");
+        println!(" Status: [x] = complete. Run `todo -h` to know how to update.");
+    }
 
     fn save(&self) -> Result<(), Error> {
         let serialized: String = serde_json::to_string(&self.todos).unwrap();
 
-        let mut file = File::options().write(true).create(true).open(&self.source)?;
+        let mut file = File::options().write(true)
+            .truncate(true).create(true).open(&self.source)?;
         file.write_all(serialized.as_bytes())?;
+
+        println!("Saved ✅");
 
         Ok(())
     }
